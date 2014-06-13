@@ -1,5 +1,5 @@
 	// Remember that in sets, order is not relevant,
-	// hence, Set.toArray method may return objects in an
+	// hence, Set.toArray may return objects in an
 	// order different than how they were placed.
 	// The disregard for order however is how we're able to
 	// achieve O(1) times for add and remove
