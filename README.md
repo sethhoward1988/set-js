@@ -8,20 +8,21 @@ Features
   * Can handle any data type
   * Add and Remove occur in O(1) time
   * Methods for set operations included (union, intersection, difference)
+  * Handles objects with circular references (by hashing only 1 level deep)
 
 Methods
 =======
 
-  add (object)
-  remove(object)
-  removeAll(object)
-  iterate(function)
-  toArray()
-  union(anotherSet)
-  intersection(anotherSet)
-  difference(anotherSet)
-  isSubsetOf(anotherSet)
-  isSupersetOf(anotherSet)
+  * add (object)
+  * remove(object)
+  * removeAll(object)
+  * iterate(function)
+  * toArray()
+  * union(anotherSet)
+  * intersection(anotherSet)
+  * difference(anotherSet)
+  * isSubsetOf(anotherSet)
+  * isSupersetOf(anotherSet)
   
 Usage
 =====
