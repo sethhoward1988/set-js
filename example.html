@@ -1,0 +1,242 @@
+<html>
+<script>
+
+	// Remember that in sets, order is not relevant,
+	// hence, Set.toArray method may return objects in an
+	// order differently than how they were placed.
+	// The disregard for order however is how we're able to
+	// achieve O(1) times for add and remove
+
+	Set = function () {
+		this.set = {};
+		this.setArray = [];
+	}
+
+	Set.prototype = {
+
+		// O(1)
+		add: function (object) {
+			var hash = this._uniqueHash(object);
+			
+			this.set[hash] = {
+				object: object,
+				count: 1,
+				index: this.setArray.length,
+			}
+
+			this.setArray.push(hash);
+		},
+
+		// O(1)
+		// Removes the last instance of an object
+		remove: function (object) {
+			var hash = this._baseHash(object);
+			var wrapperObject = this.set[hash];
+
+			if(wrapperObject){
+				if(wrapperObject.count > 1){
+					hash = hash + '&count=' +wrapperObject.count;
+					wrapperObject.count--;
+					wrapperObject = this.set[hash];
+				}
+
+				var movedObjectWrapper = this.set[this.setArray[this.setArray.length - 1]];
+				
+				movedObjectWrapper.index = wrapperObject.index;
+
+				if(wrapperObject.index == this.setArray.length - 1){
+					this.setArray.pop(); // Last object
+				} else {
+					this.setArray.splice(wrapperObject.index, 1, this.setArray.pop());	
+				}
+
+				delete this.set[hash];
+				return true;
+			} else {
+				return false;
+			}
+		},
+
+		// O(n) -- n is the number of instances
+		// Removes all instances of an object
+		removeAll: function (object) {
+			while(this.remove(object) == true) {}
+		},
+
+		// O(n)
+		iterate: function (fn) {
+			var that = this;
+			this.setArray.forEach(function(hash){
+				fn(that.set[hash].object);
+			});
+		},
+
+		// O(1)
+		toArray: function () {
+			var array = [];
+			this.iterate(function (obj) {
+				array.push(obj);
+			});
+			return array;
+		},
+
+		union: function (setB) {
+
+		},
+
+		intersection: function (setB) {
+
+		},
+
+		difference: function (setB) {
+
+		},
+
+		// O(n)
+		isSubsetOf: function (setB) {
+			var isSubset = true;
+			var that = this;
+			this.iterate(function (obj) {
+				var hash = that._baseHash(obj);
+				if(!setB.set[hash]){
+					isSubset = false;
+				}
+			});
+			return isSubset;
+		},
+
+		// O(n)
+		isSupersetOf: function (setB) {
+			return setB.isSubsetOf(this);
+		},
+
+		// Utility Methods
+
+		_baseHash: function (object) {
+			var hash;
+			switch(typeof object){
+				case 'string':
+					hash = object.toString();
+					break;
+				case 'number':
+					hash = object.toString();
+					break;
+				case 'undefined':
+					hash = 'undefined';
+					break;
+				case 'function':
+					hash = object.name + object.toString(); //Combine signature and source
+					break;
+				case 'boolean':
+					hash = object.toString();
+					break;
+				case 'object':
+					hash = 'object';
+					try {
+						hash = JSON.stringify(object);
+					} catch (e) {
+						// Still trying to figure out how to handle circular references...
+						return this._circularHash(object);
+					}
+					
+					return hash;
+
+			}
+
+			return hash;
+
+		},
+
+		_circularHash: function (object) {
+			var circularObjects = [];
+			var hash = '';
+
+			for(prop in object){
+				if(typeof object[prop] == 'object'){
+					try {
+						hash += JSON.stringify(object);
+					} catch (e) {
+						hash += '"' + prop + '":"circularObject"';	
+					}
+				} else {
+					hash += '"' + prop + '":"' + this._baseHash(object[prop]) + '"';
+				}	
+			}
+
+			return hash;
+
+		},
+
+		_uniqueHash: function (object) {
+			var hash = this._baseHash(object);
+			var objectWrapper = this.set[hash];
+			
+			if(objectWrapper){
+				objectWrapper.count++;
+				hash += '&count=' + objectWrapper.count;
+			}
+			return hash;
+		}
+	}
+
+	var mySet = new Set;
+
+	mySet.add(1);
+	mySet.add(2);
+	mySet.add(3);
+	mySet.add(4);
+	mySet.add(4);
+	mySet.add(4);
+	mySet.add(5);
+	mySet.add('hello');
+	mySet.add(true);
+	mySet.add({
+		myObject: true
+	});
+	mySet.add({
+		myObject: false
+	});
+	mySet.add(function helloWorld () {
+		console.log('hello world!');
+	})
+	mySet.remove(function helloWorld () {
+		console.log('hello world!');
+	});
+
+	var circularObject1 = {
+		random1: 'hi',
+		random2: 'hi'
+	}
+
+	var circularObject2 = {
+		circularReference: circularObject1,
+		random3: 'hi',
+		random4: 'hi'
+	}
+
+	circularObject1.circularReference = circularObject2
+
+	mySet.add(circularObject1);
+	mySet.add(circularObject2);
+
+	var superset = new Set;
+
+	var subset = new Set;
+
+	superset.add(1)
+	superset.add(2)
+	superset.add(3)
+	superset.add(4)
+	superset.add(5)
+
+	subset.add(1)
+	subset.add(3)
+	subset.add(5)
+
+	console.log(subset.isSubsetOf(superset)); // true
+	console.log(subset.isSupersetOf(superset)); // false
+	console.log(superset.isSupersetOf(subset)); // true
+	console.log(superset.isSubsetOf(subset)); // false
+
+</script>
+</html>
